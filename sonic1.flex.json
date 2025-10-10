@@ -1,10 +1,10 @@
 {
     "Flex": 2,
     "name": "Sonic 1",
-    "node": "da472ab9-f363-45e6-8ee3-a83fd70d6d9c",
+    "node": "95c15d54-25a7-4799-b404-06df2655bafc",
     "objects": [
         {
-            "name": "Common",
+            "name": "Playable Characters",
             "children": [
                 {
                     "name": "Sonic",
@@ -14,22 +14,105 @@
                             "length": 1
                         }
                     ],
-                    "format": "Sonic 1.js",
+                    "format": "Sonic 2.js",
                     "art": {
-                        "path": "artunc/Sonic.bin",
+                        "path": "chars\\Sonic\\Uncompressed.bin",
                         "compression": "Uncompressed",
                         "offset": 0
                     },
                     "mappings": {
-                        "path": "_maps/Sonic.asm",
+                        "path": "chars\\Sonic\\Maps.asm",
                         "label": ""
                     },
                     "dplcs": {
                         "enabled": true,
-                        "path": "_maps/Sonic - Dynamic Gfx Script.asm",
+                        "path": "chars\\Sonic\\GFX.asm",
+                        "label": ""
+                    },
+                    "uuid": "02995cda-8050-4a3f-b079-4a3d22685cf9"
+                },
+                {
+                    "format": "Sonic 2.js",
+                    "name": "Metal Sonic",
+                    "palettes": [
+                        {
+                            "path": "palette\\Metal.bin",
+                            "length": 1
+                        }
+                    ],
+                    "art": {
+                        "path": "chars\\Metal Sonic\\Uncompressed.bin",
+                        "compression": "Uncompressed",
+                        "offset": 0
+                    },
+                    "mappings": {
+                        "path": "chars\\Metal Sonic\\Maps.asm",
+                        "label": ""
+                    },
+                    "dplcs": {
+                        "enabled": true,
+                        "path": "chars\\Metal Sonic\\GFX.asm",
+                        "label": ""
+                    },
+                    "uuid": "5187c0f9-b0d4-47b1-8465-f34d6fa157cb"
+                },
+                {
+                    "name": "Knuckles",
+                    "palettes": [
+                        {
+                            "path": "palette/KTE.bin",
+                            "length": 1
+                        }
+                    ],
+                    "format": "Sonic 3&K Player.js",
+                    "art": {
+                        "path": "chars\\KTE\\Uncompressed.bin",
+                        "compression": "Uncompressed",
+                        "offset": 0
+                    },
+                    "mappings": {
+                        "path": "chars\\KTE\\Maps.asm",
+                        "label": ""
+                    },
+                    "dplcs": {
+                        "enabled": true,
+                        "path": "chars\\KTE\\GFX.asm",
                         "label": ""
                     },
                     "uuid": "da472ab9-f363-45e6-8ee3-a83fd70d6d9c"
+                }
+            ],
+            "isDirectory": true,
+            "expanded": true,
+            "uuid": "7a02995c-da80-402a-bf70-794a3d22685c"
+        },
+        {
+            "name": "Common",
+            "children": [
+                {
+                    "format": "Sonic 3&K Player.js",
+                    "name": "Insta-Shield",
+                    "palettes": [
+                        {
+                            "path": "chars\\Sonic\\Insta-shield\\Palette.bin",
+                            "length": 1
+                        }
+                    ],
+                    "art": {
+                        "path": "chars\\Sonic\\Insta-shield\\Uncompressed.bin",
+                        "compression": "Uncompressed",
+                        "offset": 0
+                    },
+                    "mappings": {
+                        "path": "chars\\Sonic\\Insta-shield\\Map.asm",
+                        "label": ""
+                    },
+                    "dplcs": {
+                        "enabled": true,
+                        "path": "chars\\Sonic\\Insta-shield\\DPLC.asm",
+                        "label": ""
+                    },
+                    "uuid": "95c15d54-25a7-4799-b404-06df2655bafc"
                 },
                 {
                     "name": "Signpost",
@@ -283,7 +366,7 @@
                 }
             ],
             "isDirectory": true,
-            "expanded": false,
+            "expanded": true,
             "uuid": "14da472a-b9f3-4355-a6ce-e3a83fd70d6d"
         },
         {

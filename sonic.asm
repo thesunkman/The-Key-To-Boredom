@@ -2308,6 +2308,28 @@ Tit_CountC:
 loc_3230:
 		tst.w	(v_generictimer).w
 		beq.w	GotoDemo
+
+Tit_CheckForB:
+		cmpi.b	#btnB,(v_jpadpress1).w	; has B been pressed?
+		bne.s	StartCheck		; if not, branch
+
+Tit_FirstCharacter:
+		move.b	#0,(v_character).w	; set the multiple character flag to 1 (indicating Metal Sonic)
+		move.b	#sfx_Ring,d0		; put value of ring sound into d0
+		bsr.w	QueueSound2	; jump to the subroutine that plays the sound currently in d0 (sfx_Ring, at the moment)
+
+Tit_SecondCharacter:
+		move.b	#1,(v_character).w	; set the multiple character flag to 1 (indicating Knuckles)
+		move.b	#sfx_Electric,d0		; put value of ring sound into d0
+		bsr.w	QueueSound2	; jump to the subroutine that plays the sound currently in d0 (sfx_Ring, at the moment)
+		
+		
+;Tit_ThirdCharacter:
+;		move.b	#2,(v_character).w	; set the multiple character flag to 2 (indicating Metal Sonic)
+;		move.b	#sfx_Teleport, d0	; put value of ring sound into d0
+;		bsr.w	QueueSound2	; jump to the subroutine that plays the sound currently in d0 (sfx_Ring, at the moment)
+
+StartCheck:
 		andi.b	#btnStart,(v_jpadpress1).w ; check if Start is pressed
 		beq.w	Tit_MainLoop	; if not, branch
 
@@ -2337,7 +2359,6 @@ Tit_ClrScroll2:
 ; ---------------------------------------------------------------------------
 ; Level Select
 ; ---------------------------------------------------------------------------
-
 LevelSelect:
 		move.b	#4,(v_vbla_routine).w
 		bsr.w	WaitForVBla
@@ -2609,13 +2630,11 @@ LevSel_SndTest:
 		bhs.s	LevSel_Right
 		moveq	#$4F,d0		; if sound test moves below 0, set to $4F
 
+
 LevSel_Right:
 		btst	#bitR,d1	; is right pressed?
 		beq.s	LevSel_Refresh2	; if not, branch
 		addq.w	#1,d0		; add 1 to sound test
-		cmpi.w	#$50,d0
-		blo.s	LevSel_Refresh2
-		moveq	#0,d0		; if sound test moves above $4F, set to 0
 
 LevSel_Refresh2:
 		move.w	d0,(v_levselsound).w ; set sound test number
@@ -6032,7 +6051,7 @@ Map_WFall:	include	"_maps/Waterfalls.asm"
 
 ; ===========================================================================
 
-		include	"_incObj/01 Sonic.asm"
+		include	"chars/Main.asm"
 		include	"_incObj/0A Drowning Countdown.asm"
 
 
@@ -7494,14 +7513,45 @@ Eni_JapNames:	binclude	"tilemaps/Hidden Japanese Credits.eni" ; Japanese credits
 Nem_JapNames:	binclude	"artnem/Hidden Japanese Credits.nem"
 		even
 
-Map_Sonic:	include	"_maps/Sonic.asm"
-SonicDynPLC:	include	"_maps/Sonic - Dynamic Gfx Script.asm"
-
 ; ---------------------------------------------------------------------------
 ; Uncompressed graphics - Sonic
 ; ---------------------------------------------------------------------------
-Art_Sonic:	binclude	"artunc/Sonic.bin"	; Sonic
+Art_Sonic:	binclude "chars/Sonic/Uncompressed.bin"	; Sonic
 		even
+
+Map_Sonic:	include	 "chars/Sonic/Maps.asm"
+SonicDynPLC:	include	 "chars/Sonic/GFX.asm"
+
+; ---------------------------------------------------------------------------
+; Uncompressed graphics - Insta-Shield
+; ---------------------------------------------------------------------------
+
+;Art_InstaShield:
+;		include "chars/Sonic/Insta-shield/Uncompressed.bin"
+;Map_InstaShield:
+;		include "chars/Sonic/Insta-shield/Map.asm"
+;DPLC_InstaShield:
+;		include "chars/Sonic/Insta-shield/GFX.asm"
+;Ani_InstaShield:
+;		include "chars/Sonic/Insta-shield/Anim.asm"
+
+; ---------------------------------------------------------------------------
+; Uncompressed graphics - Metal Sonic
+; ---------------------------------------------------------------------------
+Art_Metal:	binclude	"chars/Metal Sonic/Uncompressed.bin"	; Metal
+		even
+
+Map_MetalSonic:	include	"chars/Metal Sonic/Maps.asm"
+MetalSDynPLC:	include	"chars/Metal Sonic/GFX.asm"
+
+; ---------------------------------------------------------------------------
+; Uncompressed graphics - Knuckles
+; ---------------------------------------------------------------------------
+Art_KTE:	binclude	"chars/KTE/Uncompressed.bin"	; KTE
+		even
+
+Map_KTE:	include	"chars/KTE/Maps.asm"
+KTEDynPLC:	include	"chars/KTE/GFX.asm"
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - various
 ; ---------------------------------------------------------------------------
