@@ -126,6 +126,7 @@ ob2ndRout:	equ $25	; secondary routine number
 obAngle:	equ $26	; angle
 obSubtype:	equ $28	; object subtype
 obSolid:	equ ob2ndRout ; solid status flag
+oPlayerCharge:	equ $41C; object subtype
 
 ; Object variables used by Sonic
 flashtime:	equ $30	; time between flashes after getting hit

@@ -2,8 +2,6 @@
 ; Object 01 - Sonic
 ; ---------------------------------------------------------------------------
 
-
-
 ; Obj01:
 SonicPlayer:
 		tst.w	(v_debuguse).w	; is debug mode being used?
@@ -374,7 +372,7 @@ loc_12F6A:
 
 loc_12F70:
 		move.b	#id_Balance,obAnim(a0) ; use "balancing" animation
-		bra.s	Sonic_ResetScr
+		bne.s	Sonic_ResetScr
 ; ===========================================================================
 
 Sonic_LookUp:
@@ -386,6 +384,198 @@ Sonic_LookUp:
 		addq.w	#2,(v_lookshift).w
 		bra.s	loc_12FC2
 ; ===========================================================================
+
+.CheckCharge:
+	move.b	lookMode.w,d0			; Get double tap timer
+	andi.b	#$F,d0
+	beq.s	.DblTapNotInit			; If it's not active, branch
+	addq.b	#1,lookMode.w			; Increment timer
+	andi.b	#$CF,lookMode.w			; Cap the timer properly
+
+.DblTapNotInit:
+	btst	#7,lookMode.w			; Is the look up flag set?
+	bne.w	Sonic_LookUp			; If so, branch
+	btst	#6,lookMode.w			; Is the look down flag set?
+	bne.w	.CheckForSpindash		; If so, branch
+
+	btst	#bitDn,(v_jpadhold2).w		; Is down being held?
+	bne.w	.CheckForSpindash		; If so, branch
+	andi.b	#$F,lookMode.w			; Clear out look flags
+	beq.s	.CheckUpPress			; If the double tap timer wasn't set, branch
+
+	btst	#bitUp,(v_jpadpress1).w		; Have we double tapped up?
+	beq.s	.CheckUpHeld			; If not, branch
+	bset	#7,lookMode.w			; Set the look up flag
+	bra.w	loc_12FC2			; Settle movement
+
+.CheckUpPress:
+	btst	#0,(v_jpadpress1).w		; Have we just pressed up?
+	beq.w	.CheckUpHeld			; If not, branch
+	move.b	#1,lookMode.w			; Set the double tap timer to be active
+	bra.w	loc_12FC2			; Settle movement
+
+.CheckUpHeld:
+	btst	#bitUp,(v_jpadhold2).w		; Are we holding up?
+	beq.s	.CheckUnleashPeelout		; If not, branch
+
+	move.b	#id_LookUp,obAnim(a0) 		; use "looking up" animation
+	tst.b	oPlayerCharge(a0)		; Are we charging a peelout?
+	beq.s	.CheckStartCharge		; If not, branch
+
+; -------------------------------------------------------------------------
+
+.Peelout:
+	move.b	#id_Run,obAnim(a0) 		; restart Sonic's animation
+	
+	moveq	#100,d0				; Get charge speed increment value
+	move.w	(v_sonspeedmax).w,d1		; Get max charge speed (top speed * 2)
+	move.w	d1,d2
+	asl.w	#1,d1
+	tst.b	(v_shoes).w			; Do we have speed shoes?
+	beq.s	.NoSpeedShoes			; If not, branch
+	asr.w	#1,d2				; Get max charge speed for speed shoes ((top speed * 2) - (top speed / 2))
+	sub.w	d2,d1
+
+.NoSpeedShoes:
+	btst	#0,oFlags(a0)			; Are we facing left?
+	beq.s	.IncPeeloutCharge		; If not, branch
+	neg.w	d0				; Negate the charge speed increment value
+	neg.w	d1				; Negate the max charge speed
+
+.IncPeeloutCharge:
+	add.w	d0,obVelX(a0)		; Increment charge speed
+
+	move.w	obVelX(a0),d0		; Get current charge speed
+	btst	#0,oFlags(a0)			; Are we facing left?
+	beq.s	.CheckMaxRight			; If not, branch
+	cmp.w	d0,d1				; Have we reached the max charge speed?
+	ble.s	.SetChargeSpeed			; If not, branch
+	bra.s	.CapCharge			; If so, cap it
+
+.CheckMaxRight:
+	cmp.w	d1,d0				; Have we reached the max charge speed?
+	ble.s	.SetChargeSpeed			; If not, branch
+
+.CapCharge:
+	move.w	d1,d0				; Cap the charge speed
+
+.SetChargeSpeed:
+	move.w	d0,obVelX(a0)		; Update the charge speed
+	rts
+
+.CheckStartCharge:
+	move.b	(v_jpadpress2).w,d0
+	andi.b	#btnABC,d0	; is A, B or C pressed?
+	andi.b	#$70,d0
+	beq.s	.DontCharge			; If not, branch
+
+	move.b	#1,oPlayerCharge(a0)		; Set the look double tap timer to be active
+	move.w	#FM_9C,d0			; Play charge sound
+	jsr	PlayFMSound
+
+.DontCharge:
+	bra.w	loc_12FC2				; Settle movement
+
+.CheckUnleashPeelout:
+	cmpi.b	#30,oPlayerCharge(a0)		; Have we fully charged the peelout?
+	beq.s	.UnleashPeelout			; If so, branch
+
+	move.w	#FM_CHARGESTOP,d0		; Play charge stop sound
+	jsr	PlayFMSound
+	move.b	#0,oPlayerCharge(a0)		; Stop charging
+	move.w	#0,obVelX(a0)
+	bra.s	.CheckForSpindash		; Check for spindash
+
+.UnleashPeelout:
+	move.b	#0,oPlayerCharge(a0)		; Stop charging
+	move.w	#FM_91,d0			; Play charge release sound
+	jsr	PlayFMSound
+	bra.w	.ResetScreen			; Reset screen position
+
+; -------------------------------------------------------------------------
+
+	bsr.w	ObjSonic_MoveGndLeft		; Move left
+	bra.w	.ResetScreen			; Reset screen position
+
+; -------------------------------------------------------------------------
+
+; -------------------------------------------------------------------------
+
+.CheckForSpindash:
+	btst	#6,lookMode.w			; Is the look down flag set?
+	bne.w	.Duck				; If so, branch
+	andi.b	#$F,lookMode.w			; Clear out the look flags
+	beq.s	.CheckDownPress			; If the double tap timer wasn't set, branch
+
+	btst	#1,playerCtrlTap.w		; Have we double tapped down?
+	beq.s	.CheckSpindash			; If not, branch
+	bset	#6,lookMode.w			; Set the look down flag
+	bra.w	loc_12FC2				; Settle movement
+
+.CheckDownPress:
+	btst	#1,playerCtrlTap.w		; Have we just pressed down?
+	beq.s	.CheckSpindash			; If not, branch
+	move.b	#1,lookMode.w			; Set the double tap timer to be active
+	bra.w	loc_12FC2				; Settle movement
+
+.CheckSpindash:
+	btst	#bitDn,(v_jpadhold2).w		; Are we holding down?
+	bra.s	Sonic_ResetScr			; If not, branch
+
+	move.b	#id_Duck,obAnim(a0) ; use "ducking" animation
+	tst.b	oPlayerCharge(a0)		; Are we charging a spindash?
+	bne.s	.DoSettle			; If so, branch
+
+	move.b	playerCtrlTap.w,d0		; Did we press A, B, or C while we were holding down?
+	andi.b	#$70,d0
+	beq.s	.DoSettle			; If not, branch
+
+	move.b	#1,oPlayerCharge(a0)		; Set the look double tap timer to be active
+	move.w	#$16,obVelX(a0)			; Set initial spindash charge speed
+	btst	#0,oFlags(a0)
+	beq.s	.PlaySpindashSound
+	neg.w	obVelX(a0)
+
+.PlaySpindashSound:
+	move.w	#FM_9C,d0			; Play charge sound
+	jsr	PlayFMSound
+	bsr.w	ObjSonic_StartRoll		; Start rolling for the spindash
+
+.DoSettle:
+	bra.s	loc_12FC2				; Settle movement
+
+; -------------------------------------------------------------------------
+; Make Sonic start rolling
+; -------------------------------------------------------------------------
+
+ObjSonic_StartRoll:
+	btst	#2,oFlags(a0)			; Are we already rolling?
+	beq.s	.DoRoll				; If not, branch
+	bra.s	.SetRollAnim			; If so, don't worry about fixing the hitbox size
+
+.DoRoll:
+	bset	#2,oFlags(a0)			; Mark as rolling
+	move.b	#$E,obHeight(a0)	; set Sonic's hitbox to ball size.
+	move.b	#7,obWidth(a0)
+	addq.w	#5,obY(a0)
+	bra.s	.SetRollAnim			; Set animatiion
+
+
+.SetRollAnim:
+	move.b	#id_Roll,obAnim(a0) 		; use "rolling" animation
+
+	tst.w	obVelX(a0)			; Are we moving left?
+	bmi.s	.End				; If not, branch
+	cmpi.w	#$200,obVelX(a0)		; Is our ground velocity less than 2?
+	bcc.s	.End				; If not, branch
+	move.w	#$200,obVelX(a0)		; If so, cap our ground velocity at 2
+
+.End:
+	rts
+
+
+; -------------------------------------------------------------------------
+
 
 Sonic_Duck:
 		btst	#bitDn,(v_jpadhold2).w ; is down being pressed?

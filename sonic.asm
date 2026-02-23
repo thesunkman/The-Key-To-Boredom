@@ -6051,7 +6051,7 @@ Map_WFall:	include	"_maps/Waterfalls.asm"
 
 ; ===========================================================================
 
-		include	"chars/Main.asm"
+		include	"chars/Sonic/01 Sonic.asm"
 		include	"_incObj/0A Drowning Countdown.asm"
 
 
