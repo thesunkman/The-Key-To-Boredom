@@ -353,6 +353,7 @@ loc_16C64:
 		; Is the parent going to delete itself?
 		cmpi.b	#$A,obRoutine(a1)
 		bne.s	.display
+		jsr	(DeleteChild).l
 
 	if FixBugs
 		; Delete the parent.

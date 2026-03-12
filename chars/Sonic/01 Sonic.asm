@@ -242,6 +242,7 @@ Sonic_Water:
 
 ; Obj01_MdNormal:
 Sonic_MdNormal:
+		bsr.w	Sonic_SpinDash
 		bsr.w	Sonic_Jump
 		bsr.w	Sonic_SlopeResist
 		bsr.w	Sonic_Move
@@ -255,6 +256,7 @@ Sonic_MdNormal:
 
 ; Obj01_MdJump:
 Sonic_MdJump:
+		bsr.w	Sonic_AirRoll
 		bsr.w	Sonic_JumpHeight
 		bsr.w	Sonic_JumpDirection
 		bsr.w	Sonic_LevelBound
@@ -722,8 +724,8 @@ Sonic_JumpDirection:
 		move.w	(v_sonspeedmax).w,d6
 		move.w	(v_sonspeedacc).w,d5
 		asl.w	#1,d5
-		btst	#4,obStatus(a0)
-		bne.s	Obj01_ResetScr2
+;		btst	#4,obStatus(a0)
+;		bne.s	Obj01_ResetScr2
 		move.w	obVelX(a0),d0
 		btst	#bitL,(v_jpadhold2).w ; is left being pressed?
 		beq.s	loc_13278	; if not, branch
@@ -884,18 +886,18 @@ Sonic_LevelBound:
 Sonic_Roll:
 		tst.b	(f_slidemode).w
 		bne.s	.noroll
-		move.w	obInertia(a0),d0
-		bpl.s	.ispositive
-		neg.w	d0
-
-.ispositive:
-		cmpi.w	#$80,d0		; is Sonic moving at $80 speed or faster?
-		blo.s	.noroll		; if not, branch
 		move.b	(v_jpadhold2).w,d0
 		andi.b	#btnL+btnR,d0	; is left/right being pressed?
 		bne.s	.noroll		; if yes, branch
 		btst	#bitDn,(v_jpadhold2).w ; is down being pressed?
-		bne.s	Sonic_ChkRoll	; if yes, branch
+		beq.s	.noroll		; if not, branch
+
+		move.w	obInertia(a0),d0
+		bpl.s	.ispositive
+		neg.w	d0
+.ispositive:	cmpi.w	#$100,d0	; is Sonic moving at $100 speed or faster?
+		bhi.s	Sonic_ChkRoll	; if yes, branch
+		move.b	#id_Duck,obAnim(a0) ; use "ducking" animation
 
 ; Obj01_NoRoll
 .noroll:
@@ -966,10 +968,10 @@ Sonic_Jump:
 		clr.b	stick_to_convex(a0)
 		move.w	#sfx_Jump,d0
 		jsr	(QueueSound2).l	; play jumping sound
-		move.b	#$13,obHeight(a0)	; set Sonic's hitbox to standing size. This is a leftover from the victory animation in prototypes.
-		move.b	#9,obWidth(a0)
+;		move.b	#$13,obHeight(a0)	; set Sonic's hitbox to standing size. This is a leftover from the victory animation in prototypes.
+;		move.b	#9,obWidth(a0)
 		btst	#2,obStatus(a0)	; is Sonic already in a ball state?
-		bne.s	.rolljump	; if so, branch.
+		bne.s	.return	; if so, branch.
 		move.b	#$E,obHeight(a0)	; set Sonic's hitbox to ball size.
 		move.b	#7,obWidth(a0)
 		move.b	#id_Roll,obAnim(a0) ; use "jumping" animation
@@ -979,9 +981,9 @@ Sonic_Jump:
 .return:
 		rts
 
-.rolljump:
-		bset	#4,obStatus(a0)	; set roll-jump flag.
-		rts
+;.rolljump:
+		;bset	#4,obStatus(a0)	; set roll-jump flag.
+		;rts
 ; End of function Sonic_Jump
 
 ; ---------------------------------------------------------------------------
@@ -1373,16 +1375,16 @@ locret_1379E:
 
 
 Sonic_ResetOnFloor:
-		btst	#4,obStatus(a0)	; is Sonic roll-jumping?
-		beq.s	.notrolljump	; if not, skip.
-		nop	; Unknown removed code.
-		nop	
-		nop	
+;		btst	#4,obStatus(a0)	; is Sonic roll-jumping?
+;		beq.s	.notrolljump	; if not, skip.
+;		nop	; Unknown removed code.
+;		nop	
+;		nop	
 
-.notrolljump:
+;.notrolljump:
 		bclr	#5,obStatus(a0)	; clear push flag.
 		bclr	#1,obStatus(a0)	; clear in-air flag.
-		bclr	#4,obStatus(a0)	; clear roll-jump flag.
+;		bclr	#4,obStatus(a0)	; clear roll-jump flag.
 		btst	#2,obStatus(a0)	; check if Sonic is in a ball state.
 		beq.s	.notball	; if not, skip.
 		bclr	#2,obStatus(a0)	; clear ball flag.
@@ -1646,7 +1648,8 @@ Sonic_Animate:
 		moveq	#0,d1
 		move.b	obAniFrame(a0),d1 ; load current frame number
 		move.b	1(a1,d1.w),d0	; read sprite number from script
-		bmi.s	.end_FF		; if animation is complete, branch
+		cmpi.b	#afChange,d0		; MJ: is it a flag from FD to FF?
+		bhs.s	.end_FF			; MJ: if so, branch to flag routines
 
 ; SAnim_Next:
 .next:
@@ -1802,28 +1805,22 @@ Sonic_Animate:
 		include	"chars/Sonic/Anim.asm"
 
 ; ---------------------------------------------------------------------------
-; Sonic graphics loading subroutine
+; Sonic DPLC loading subroutine
 ; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
 ; LoadSonicDynPLC:
 Sonic_LoadGfx:
-		moveq	#0,d0
-		move.b	obFrame(a0),d0	; load frame number
-		cmp.b	(v_sonframenum).w,d0 ; has frame changed?
-		beq.s	.nochange	; if not, branch
-
-		move.b	d0,(v_sonframenum).w
-		lea	(SonicDynPLC).l,a2 ; load PLC script
-		add.w	d0,d0
-		adda.w	(a2,d0.w),a2
-		moveq	#0,d1
-		move.b	(a2)+,d1	; read "number of entries" value
-		subq.b	#1,d1
-		bmi.s	.nochange	; if zero, branch
-		lea	(v_sgfx_buffer).w,a3
-		move.b	#1,(f_sonframechg).w ; set flag for Sonic graphics DMA
+		move.b	obFrame(a0),d0			; get Sonic's current frame
+		cmp.b	(v_sonframenum).w,d0		; has the frame changed?
+		beq.s	.end				; if not, nothing to do
+		move.b	d0,(v_sonframenum).w		; update cached frame number
+		lea	(SonicDynPLC).l,a2		; load Sonic DPLC table
+		move.w	#ArtTile_Sonic*tile_size,d4	; starting VRAM tile
+		move.l	#Art_Sonic,d6			; base Sonic art pointer
+		jmp	(LoadDynPLC).l			; load DPLC
+.end:
+		rts					; return
+; End of function Sonic_LoadGfx
 
 ; SPLC_ReadEntry:
 .readentry:
@@ -1850,3 +1847,140 @@ Sonic_LoadGfx:
 		rts
 
 ; End of function Sonic_LoadGfx
+
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Subroutine to charge and release a Spin Dash
+; ---------------------------------------------------------------------------
+; Temporary equates until we add the proper Spin Dash sprites and SFX.
+; This stuff will be removed later in the tutorial.
+id_SpinDash:	equ id_Roll	; use roll animation for now
+sfx_SpinDash:	equ sfx_Roll	; use roll SFX for now	
+; ---------------------------------------------------------------------------
+
+Sonic_SpinDash:
+		btst	#0,spindash_flag(a0)		; is Spin Dash flag already set?
+		bne.s	Sonic_UpdateSpindash		; if yes, branch to alternate routine
+		cmpi.b	#id_Duck,obAnim(a0)		; is Sonic in his ducking animation?
+		bne.s	.end				; if not, branch
+		moveq	#btnABC,d0			; is A, B, or C...
+		and.b	(v_jpadpress2).w,d0		; ...currently pressed? (not held)
+		beq.w	.end				; if not, branch
+
+		move.b	#id_SpinDash,obAnim(a0)		; change Sonic's animation to Spin Dashing
+		move.w	#sfx_SpinDash,d0		; set Spin Dash sound
+		jsr	(QueueSound2).l			; play it
+		addq.l	#4,sp				; skip previous stack entry (i.e. don't do anything else in Sonic_MdNormal)
+		bset	#0,spindash_flag(a0)		; set the Spin Dash flag
+		clr.w	spindash_count(a0)		; set the Spin Dash counter to start at 0
+
+		bsr.w	Sonic_LevelBound		; because we skipped the stack pointer...
+		bsr.w	Sonic_AnglePos			; ...we need to manually run some Sonic stuff
+.end:
+		rts
+; ===========================================================================
+
+Sonic_UpdateSpindash:
+		btst	#bitDn,(v_jpadhold2).w		; is down (still) held?
+		bne.w	Sonic_ChargingSpindash		; if yes, keep charging Spin Dash
+
+Sonic_ReleaseSpindash:
+		move.b	#$E,obHeight(a0)		; reset Sonic's height to the appropriate value
+		move.b	#7,obWidth(a0)			; reset Sonic's width to the appropriate value
+		move.b	#id_Roll,obAnim(a0)		; set Sonic's animation to rolling
+		addq.w	#5,obY(a0)			; add the difference between Sonic's rolling and standing heights
+		bclr	#0,spindash_flag(a0)		; unset Spin Dash flag
+		bset	#2,obStatus(a0)			; set Sonic's rolling flag
+		move.w	#sfx_Teleport,d0		; set Spin Dash zoom sound
+		jsr	(QueueSound2).l 		; play it
+
+		moveq	#0,d0				; clear d0
+		move.b	spindash_count(a0),d0		; get number of Spin Dash revs that were performed
+		lsl.w	#7,d0				; multiply by $80 for each rev
+		move.w	d0,d1				; copy for camera-delay calculation
+		addi.w	#$800,d0			; add base speed of $800
+
+		btst	#0,obStatus(a0)			; is Sonic looking to the left?
+		beq.s	.not_left			; if not, branch
+		neg.w	d0				; negate charge direction
+.not_left:	move.w	d0,obInertia(a0)		; apply final speed
+
+		; Camera delay
+		add.w	d1,d1				; double 0-based speed
+		andi.w	#$1F00,d1			; limit result
+		neg.w	d1				; make result negative
+		addi.w	#$2000,d1			; add a static base delay against it
+		move.w	d1,(v_cam_x_delay).w		; set the final value as camera delay
+
+		; Set new velocties immediately
+		move.b	obAngle(a0),d0			; get Sonic's current floor angle
+		jsr	(CalcSine).l			; calculate the sine and cosine
+		muls.w	obInertia(a0),d1		; multiply sine by release speed
+		asr.l	#8,d1				; divide by $100
+		move.w	d1,obVelX(a0)			; set new X velocity
+		muls.w	obInertia(a0),d0		; multiply cosine by release speed
+		asr.l	#8,d0				; divide by $100
+		move.w	d0,obVelY(a0)			; set new Y velocity
+
+		bra.s	Sonic_Spindash_ResetScr		; skip
+; ===========================================================================
+
+Sonic_ChargingSpindash:
+		move.b	#id_SpinDash,obAnim(a0)		; make sure Spin Dash animation stays
+
+		tst.w	spindash_count(a0)		; were any revs done?
+		beq.s	.no_rev				; if not, branch
+		move.w	spindash_count(a0),d0		; get current number of revs
+		lsr.w	#5,d0				; divide that number by 32
+		sub.w	d0,spindash_count(a0)		; subtract that number from the stored revs (basically a decay)
+		bhs.s	.no_rev				; if result is still positive, branch
+		clr.w	spindash_count(a0)		; if we underflowed, reset rev counter to 0
+.no_rev:
+		moveq	#btnABC,d0			; is A, B, or C...
+		and.b	(v_jpadpress2).w,d0		; ...currently pressed? (not held)
+		beq.w	Sonic_Spindash_ResetScr		; if not, branch
+		move.w	#(id_SpinDash<<8),obAnim(a0)	; restart Spin Dash animation
+		move.w	#sfx_SpinDash,d0		; set Spin Dash charge sound
+		jsr	(QueueSound2).l			; play it
+		addi.w	#$200,spindash_count(a0)	; increase rev counter by 2
+		cmpi.w	#$800,spindash_count(a0)	; did we exceed the maximum?
+		blo.s	Sonic_Spindash_ResetScr		; if not, branch
+		move.w	#$800,spindash_count(a0)	; cap charge counter at maximum
+
+Sonic_Spindash_ResetScr:
+		addq.l	#4,sp				; skip previous stack entry (i.e. don't do anything else in Sonic_MdNormal)
+		cmpi.w	#(224/2)-16,(v_lookshift).w	; is vertical camera offset at base level?
+		beq.s	.resetscr_end			; if yes, branch
+		bhs.s	.pull_cam_up			; if not and the camera is offset downwards, branch
+		addq.w	#2,(v_lookshift).w		; move camera down
+		bra.s	.resetscr_end			; skip over
+.pull_cam_up:	subq.w	#2,(v_lookshift).w		; move camera up
+
+.resetscr_end:
+		bsr.w	Sonic_LevelBound		; because we skipped the stack pointer...
+		bsr.w	Sonic_AnglePos			; ...we need to manually run some Sonic stuff
+		rts
+; End of function Sonic_SpinDash
+
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; AIRROLL SUBROUTINE
+; ---------------------------------------------------------------------------
+Sonic_AirRoll:
+		move.b	(v_jpadpress2).w,d0
+		andi.b	#btnABC,d0	; is A, B or C pressed?
+		beq.w	.airrollreturn	; if not, branch
+		
+		btst	#2,obStatus(a0)	; is Sonic already in a ball state?
+		bne.s	.airrollreturn	; if so, branch.
+		
+		
+		move.b	#$E,obHeight(a0)	; set Sonic's hitbox to ball size.
+		move.b	#7,obWidth(a0)
+		move.b	#id_Roll,obAnim(a0) ; use "jumping" animation
+		bset	#2,obStatus(a0)
+		addq.w	#5,obY(a0)
+.airrollreturn: 
+		rts
+
+		include	"chars/Sonic/Insta-shield/Main.asm"

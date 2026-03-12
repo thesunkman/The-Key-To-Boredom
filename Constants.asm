@@ -15,8 +15,9 @@ PSG_Sample_Rate: equ Z80_Clock/16
 ; VDP addressses
 vdp_data_port:		equ $C00000
 vdp_control_port:	equ $C00004
+VDP_data_port:		equ vdp_data_port
+VDP_control_port: 	equ vdp_control_port
 vdp_counter:		equ $C00008
-
 psg_input:		equ $C00011
 
 ; Z80 addresses
@@ -134,7 +135,9 @@ invtime:	equ $32	; time left for invincibility
 shoetime:	equ $34	; time left for speed shoes
 stick_to_convex:equ objoff_38
 standonobject:	equ $3D	; object Sonic stands on
-
+spindash_flag:	equ $39	; Spin Dash flag
+spindash_count:	equ $3A	; Spin Dash rev counter
+spindash_decay:	equ $3B	; Spin Dash rev decay timer
 ; Miscellaneous object scratch-RAM
 objoff_25:	equ $25
 objoff_26:	equ $26

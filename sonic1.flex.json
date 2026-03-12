@@ -1,7 +1,7 @@
 {
     "Flex": 2,
     "name": "Sonic 1",
-    "node": "da472ab9-f363-45e6-8ee3-a83fd70d6d9c",
+    "node": "c12435ed-bd7b-4395-bdef-cebf10480088",
     "objects": [
         {
             "name": "Playable Characters",
@@ -80,17 +80,9 @@
                         "label": ""
                     },
                     "uuid": "da472ab9-f363-45e6-8ee3-a83fd70d6d9c"
-                }
-            ],
-            "isDirectory": true,
-            "expanded": true,
-            "uuid": "7a02995c-da80-402a-bf70-794a3d22685c"
-        },
-        {
-            "name": "Common",
-            "children": [
+                },
                 {
-                    "format": "Sonic 3&K Player.js",
+                    "format": "Sonic 1.js",
                     "name": "Insta-Shield",
                     "palettes": [
                         {
@@ -113,6 +105,39 @@
                         "label": ""
                     },
                     "uuid": "95c15d54-25a7-4799-b404-06df2655bafc"
+                }
+            ],
+            "isDirectory": true,
+            "expanded": true,
+            "uuid": "7a02995c-da80-402a-bf70-794a3d22685c"
+        },
+        {
+            "name": "Common",
+            "children": [
+                {
+                    "format": "Sonic 1.js",
+                    "name": "Shield",
+                    "palettes": [
+                        {
+                            "path": "palette\\Sonic.bin",
+                            "length": 1
+                        }
+                    ],
+                    "art": {
+                        "path": "artnem\\Shield.nem",
+                        "compression": "Nemesis",
+                        "offset": 0
+                    },
+                    "mappings": {
+                        "path": "_maps\\Shield and Invincibility.asm",
+                        "label": ""
+                    },
+                    "dplcs": {
+                        "enabled": false,
+                        "path": "",
+                        "label": ""
+                    },
+                    "uuid": "c12435ed-bd7b-4395-bdef-cebf10480088"
                 },
                 {
                     "name": "Signpost",

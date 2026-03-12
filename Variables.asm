@@ -20,9 +20,9 @@ v_ngfx_buffer_end:
 v_spritequeue:		ds.b	$400		; sprite display queue, in order of priority
 v_16x16:		ds.b	$1800		; 16x16 tile mappings
 
-v_sgfx_buffer:		ds.b	tile_size*23	; buffered Sonic graphics ($17 cells)
-v_sgfx_buffer_end:
-			ds.b	$20		; unused
+VDP_Command_Buffer:	ds.w	7*$12		; stores 18 ($12) VDP commands to issue the next time ProcessDMAQueue is called
+VDP_Command_Buffer_Slot:ds.l	1		; stores the address of the next open slot for a queued VDP command
+			ds.b	$200		; unused ($200 were freed up by the new DMA Queue)
 v_tracksonic:		ds.b	$100		; position tracking data for Sonic
 v_hscrolltablebuffer:	ds.b	$380		; scrolling table data
 v_hscrolltablebuffer_end:
@@ -111,7 +111,11 @@ v_jpadhold1:		ds.b	1		; joypad input - held
 v_jpadpress1:		ds.b	1		; joypad input - pressed
 			ds.b	6		; unused
 v_vdp_buffer1:		ds.w	1		; VDP instruction buffer
-			ds.b	6		; unused
+v_cam_x_delay:		ds.w	1		; (word) horizontal camera delay timer after a Spin Dash
+v_cam_y_delay:		ds.b	1		; vertical camera delay when looking up/down
+v_spindash_sfx_flag:	ds.b	1		; set to 1 if the Spin Dash sound was the last one played and 0 if it was not
+v_spindash_sfx_timer:	ds.b	1		; timer to reset the Spin Dash rev pitch after a second of inactivity
+v_spindash_sfx_pitch:	ds.b	1		; current Spin Dash rev pitch value
 v_generictimer:		ds.w	1		; generic timer, decrements to 0 in vblank (word)
 v_scrposy_vdp:		ds.w	1		; screen position y (VDP)
 v_bgscrposy_vdp:	ds.w	1		; background screen position y (VDP)
