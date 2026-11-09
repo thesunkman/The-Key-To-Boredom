@@ -928,6 +928,7 @@ Sonic_ChkRoll:
 		rts
 ; End of function Sonic_Roll
 
+
 ; ---------------------------------------------------------------------------
 ; Subroutine allowing Sonic to jump
 ; ---------------------------------------------------------------------------
@@ -968,22 +969,23 @@ Sonic_Jump:
 		clr.b	stick_to_convex(a0)
 		move.w	#sfx_Jump,d0
 		jsr	(QueueSound2).l	; play jumping sound
-;		move.b	#$13,obHeight(a0)	; set Sonic's hitbox to standing size. This is a leftover from the victory animation in prototypes.
-;		move.b	#9,obWidth(a0)
+		move.b	#$13,obHeight(a0)	; set Sonic's hitbox to standing size. This is a leftover from the victory animation in prototypes.
+		move.b	#9,obWidth(a0)
 		btst	#2,obStatus(a0)	; is Sonic already in a ball state?
-		bne.s	.return	; if so, branch.
+		bne.s	.rolljump	; if so, branch.
 		move.b	#$E,obHeight(a0)	; set Sonic's hitbox to ball size.
 		move.b	#7,obWidth(a0)
 		move.b	#id_Roll,obAnim(a0) ; use "jumping" animation
 		bset	#2,obStatus(a0)
 		addq.w	#5,obY(a0)
 
+
 .return:
 		rts
 
-;.rolljump:
-		;bset	#4,obStatus(a0)	; set roll-jump flag.
-		;rts
+.rolljump:
+		bset	#4,obStatus(a0)	; set roll-jump flag.
+		rts
 ; End of function Sonic_Jump
 
 ; ---------------------------------------------------------------------------
@@ -1867,6 +1869,8 @@ Sonic_SpinDash:
 		and.b	(v_jpadpress2).w,d0		; ...currently pressed? (not held)
 		beq.w	.end				; if not, branch
 
+		move.b	#$E,obHeight(a0)	; set Sonic's hitbox to ball size.
+		move.b	#7,obWidth(a0)
 		move.b	#id_SpinDash,obAnim(a0)		; change Sonic's animation to Spin Dashing
 		move.w	#sfx_SpinDash,d0		; set Spin Dash sound
 		jsr	(QueueSound2).l			; play it
@@ -1982,5 +1986,3 @@ Sonic_AirRoll:
 		addq.w	#5,obY(a0)
 .airrollreturn: 
 		rts
-
-		include	"chars/Sonic/Insta-shield/Main.asm"

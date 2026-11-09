@@ -206,9 +206,8 @@ Drown_Countdown:; Routine $A
 		cmpi.w	#12,d0
 		bhi.s	.reduceair	; if air is above 12, branch
 
-		bne.s	.skipmusic	; if air is less than 12, branch
-		move.w	#bgm_Drowning,d0
-		jsr	(QueueSound1).l	; play countdown music
+		move.w	#sfx_AB,d0	; play a simple warning sound every second when low on air
+		jsr	(QueueSound2).l	; (inspired by Sonic CD's Tidal Tempest)
 
 .skipmusic:
 		subq.b	#1,objoff_32(a0)

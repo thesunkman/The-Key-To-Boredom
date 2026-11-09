@@ -351,6 +351,11 @@ fr_Float6:	equ $54
 fr_Injury:	equ $55
 fr_GetAir:	equ $56
 fr_WaterSlide:	equ $57
+fr_WaterSlide2:	equ $58
+fr_WaterSlide3:	equ $59
+fr_Leap:	equ $60
+fr_Leap3:	equ $61
+fr_Leap4:	equ $62
 
 ; Boss locations
 ; The main values are based on where the camera boundaries mainly lie

@@ -34,6 +34,7 @@ ptr_WaterSlide:	dc.w SonAni_WaterSlide-Ani_Sonic
 ptr_Null:	dc.w SonAni_Null-Ani_Sonic
 ptr_Float3:	dc.w SonAni_Float3-Ani_Sonic
 ptr_Float4:	dc.w SonAni_Float4-Ani_Sonic
+ptr_Leap:	dc.w SonAni_Leap-Ani_Sonic
 
 SonAni_Walk:	dc.b $FF, fr_Walk13, fr_Walk14,	fr_Walk15, fr_Walk16, fr_Walk11, fr_Walk12, afEnd
 		even
@@ -81,7 +82,7 @@ SonAni_Surf:	dc.b $3F, fr_Surf, afEnd
 SonAni_GetAir:	dc.b $B, fr_GetAir, fr_GetAir, fr_Walk15, fr_Walk16, afChange, id_Walk
 		even
 SonAni_Burnt:	dc.b $20, fr_Burnt, afEnd
-		even
+		even  
 SonAni_Drown:	dc.b $2F, fr_Drown, afEnd
 		even
 SonAni_Death:	dc.b 3,	fr_Death, afEnd
@@ -98,6 +99,8 @@ SonAni_Null:	dc.b $77, fr_Null, afChange, id_Walk
 SonAni_Float3:	dc.b 3,	fr_Float1, fr_Float2, fr_Float5, fr_Float3, fr_Float6, afEnd
 		even
 SonAni_Float4:	dc.b 3,	fr_Float1, afChange, id_Walk
+		even
+SonAni_Leap:	dc.b 3,	fr_Injury, afEnd
 		even
 
 id_Walk:	equ (ptr_Walk-Ani_Sonic)/2	; 0
@@ -131,3 +134,4 @@ id_WaterSlide:	equ (ptr_WaterSlide-Ani_Sonic)/2 ; $1B
 id_Null:	equ (ptr_Null-Ani_Sonic)/2	; $1C
 id_Float3:	equ (ptr_Float3-Ani_Sonic)/2	; $1D
 id_Float4:	equ (ptr_Float4-Ani_Sonic)/2	; $1E
+id_Leap:	equ (ptr_Leap-Ani_Sonic)/2	; $1F

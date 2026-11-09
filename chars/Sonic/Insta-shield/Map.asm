@@ -1,44 +1,52 @@
-Map_a7f7_0:
-	dc.w	Map_a7f7_10-Map_a7f7_0
-	dc.w	Map_a7f7_24-Map_a7f7_0
-	dc.w	Map_a7f7_38-Map_a7f7_0
-	dc.w	Map_a7f7_46-Map_a7f7_0
-	dc.w	Map_a7f7_5A-Map_a7f7_0
-	dc.w	Map_a7f7_6E-Map_a7f7_0
-	dc.w	Map_a7f7_82-Map_a7f7_0
-	dc.w	Map_a7f7_84-Map_a7f7_0
+Map_2446: mappingsTable
+	mappingsTableEntry.w	Map_2446_0
+	mappingsTableEntry.w	Map_2446_1
+	mappingsTableEntry.w	Map_2446_2
+	mappingsTableEntry.w	Map_2446_3
+	mappingsTableEntry.w	Map_2446_4
+	mappingsTableEntry.w	Map_2446_5
+	mappingsTableEntry.w	Map_2446_6
+	mappingsTableEntry.w	Map_2446_7
 
-Map_a7f7_10:	dc.b 3
-	dc.b $E8, 8, 0, 0, $F0
-	dc.b $F0, 4, 0, 3, $F8
-	dc.b $F8, 0, 0, 5, 0
+Map_2446_0:	spriteHeader
+ spritePiece -$10, -$18, 3, 1, 0, 0, 0, 0, 0
+ spritePiece -8, -$10, 2, 1, 3, 0, 0, 0, 0
+ spritePiece 0, -8, 1, 1, 5, 0, 0, 0, 0
+Map_2446_0_End
 
-Map_a7f7_24:	dc.b 3
-	dc.b $F0, 4, 0, 6, 8
-	dc.b $F8, 8, 0, 8, 0
-	dc.b 0, 4, 0, $B, 0
+Map_2446_1:	spriteHeader
+ spritePiece 8, -$10, 2, 1, 6, 0, 0, 0, 0
+ spritePiece 0, -8, 3, 1, 8, 0, 0, 0, 0
+ spritePiece 0, 0, 2, 1, $B, 0, 0, 0, 0
+Map_2446_1_End
 
-Map_a7f7_38:	dc.b 2
-	dc.b 0, 9, 0, $D, 0
-	dc.b $10, $C, 0, $13, $F8
+Map_2446_2:	spriteHeader
+ spritePiece 0, 0, 3, 2, $D, 0, 0, 0, 0
+ spritePiece -8, $10, 4, 1, $13, 0, 0, 0, 0
+Map_2446_2_End
 
-Map_a7f7_46:	dc.b 3
-	dc.b $F0, $C, 0, 0, $E8
-	dc.b $F8, 8, 0, 4, $E8
-	dc.b 0, 6, 0, 7, $E8
+Map_2446_3:	spriteHeader
+ spritePiece -$18, -$10, 4, 1, 0, 0, 0, 0, 0
+ spritePiece -$18, -8, 3, 1, 4, 0, 0, 0, 0
+ spritePiece -$18, 0, 2, 3, 7, 0, 0, 0, 0
+Map_2446_3_End
 
-Map_a7f7_5A:	dc.b 3
-	dc.b $E8, 4, 0, $D, $F0
-	dc.b $E8, $B, 0, $F, 0
-	dc.b 8, 4, 0, $1B, 8
+Map_2446_4:	spriteHeader
+ spritePiece -$10, -$18, 2, 1, $D, 0, 0, 0, 0
+ spritePiece 0, -$18, 3, 4, $F, 0, 0, 0, 0
+ spritePiece 8, 8, 2, 1, $1B, 0, 0, 0, 0
+Map_2446_4_End
 
-Map_a7f7_6E:	dc.b 3
-	dc.b $F0, 4, $18, $1B, $E8
-	dc.b $F8, $B, $18, $F, $E8
-	dc.b $10, 4, $18, $D, 0
+Map_2446_5:	spriteHeader
+ spritePiece -$18, -$10, 2, 1, $1B, 1, 1, 0, 0
+ spritePiece -$18, -8, 3, 4, $F, 1, 1, 0, 0
+ spritePiece 0, $10, 2, 1, $D, 1, 1, 0, 0
+Map_2446_5_End
 
-Map_a7f7_82:	dc.b 0
+Map_2446_6:	spriteHeader
+Map_2446_6_End
 
-Map_a7f7_84:	dc.b 0
+Map_2446_7:	spriteHeader
+Map_2446_7_End
 
 	even

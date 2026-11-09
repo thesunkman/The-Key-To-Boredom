@@ -16,11 +16,11 @@ AddressSRAM	  = 3	; 0 = odd+even; 2 = even only; 3 = odd only
 ; Change to 0 to build the original version of the game, dubbed REV00
 ; Change to 1 to build the later version, dubbed REV01, which includes various bugfixes and enhancements
 ; Change to 2 to build the version from Sonic Mega Collection, dubbed REVXB, which fixes the infamous "spike bug"
-Revision	  = 1
+Revision	  = 0
 
 ZoneCount	  = 6	; discrete zones are: GHZ, MZ, SYZ, LZ, SLZ, and SBZ
 
-FixBugs		  = 1	; change to 1 to enable bugfixes
+FixBugs		  = 0	; change to 1 to enable bugfixes
 
 zeroOffsetOptimization = 0	; if 1, makes a handful of zero-offset instructions smaller
 
@@ -2285,38 +2285,17 @@ Tit_ResetCheat:
 		move.w	#0,(v_title_dcount).w ; reset UDLR counter
 
 Tit_CountC:
-		move.b	(v_jpadpress1).w,d0
-		andi.b	#btnC,d0	; is C button pressed?
-		beq.s	loc_3230	; if not, branch
-		addq.w	#1,(v_title_ccount).w ; increment C counter
+		move.b	(v_jpadpress1).w,d0	; get currently pressed buttons
+		andi.b	#btnC,d0		; is C button pressed?
+		beq.s	Tit_ChkStartOrDemo	; if not, branch
+		addq.w	#1,(v_title_ccount).w	; increment C counter
 
-loc_3230:
-		tst.w	(v_generictimer).w
-		beq.w	GotoDemo
-
-Tit_CheckForB:
-		cmpi.b	#btnB,(v_jpadpress1).w	; has B been pressed?
-		bne.s	StartCheck		; if not, branch
-
-Tit_FirstCharacter:
-		move.b	#0,(v_character).w	; set the multiple character flag to 1 (indicating Metal Sonic)
-		move.b	#sfx_Ring,d0		; put value of ring sound into d0
-		bsr.w	QueueSound2	; jump to the subroutine that plays the sound currently in d0 (sfx_Ring, at the moment)
-
-Tit_SecondCharacter:
-		move.b	#1,(v_character).w	; set the multiple character flag to 1 (indicating Knuckles)
-		move.b	#sfx_Electric,d0		; put value of ring sound into d0
-		bsr.w	QueueSound2	; jump to the subroutine that plays the sound currently in d0 (sfx_Ring, at the moment)
-		
-		
-;Tit_ThirdCharacter:
-;		move.b	#2,(v_character).w	; set the multiple character flag to 2 (indicating Metal Sonic)
-;		move.b	#sfx_Teleport, d0	; put value of ring sound into d0
-;		bsr.w	QueueSound2	; jump to the subroutine that plays the sound currently in d0 (sfx_Ring, at the moment)
-
-StartCheck:
+; loc_3230:
+Tit_ChkStartOrDemo:
+		tst.w	(v_generictimer).w	; has title screen timer expired?
+		beq.w	GotoDemo		; if yes, launch Demo mode
 		andi.b	#btnStart,(v_jpadpress1).w ; check if Start is pressed
-		beq.w	Tit_MainLoop	; if not, branch
+		beq.w	Tit_MainLoop		; if not, continue looping title screen
 
 Tit_ChkLevSel:
 		tst.b	(f_levselcheat).w ; check if level select code is on
@@ -5473,8 +5452,9 @@ BuildSprites:
 		btst	#5,d4		; is static mappings flag on?
 		bne.s	.drawFrame	; if yes, branch
 		move.b	obFrame(a0),d1
-		add.b	d1,d1
+		add.w	d1,d1			; MJ: changed from byte to word (we want more than 7F sprites)
 		adda.w	(a1,d1.w),a1	; get mappings frame address
+		moveq	#0,d1			; MJ: clear d1 (because of our byte to word change)
 		move.b	(a1)+,d1	; number of sprite pieces
 		subq.b	#1,d1
 		bmi.s	.setVisible
@@ -6047,31 +6027,9 @@ Map_WFall:	include	"_maps/Waterfalls.asm"
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
 
-ResumeMusic:
-		cmpi.w	#12,(v_air).w	; more than 12 seconds of air left?
-		bhi.s	.over12		; if yes, branch
-		move.w	#bgm_LZ,d0	; play LZ music
-		cmpi.w	#(id_LZ<<8)+3,(v_zone).w ; check if level is 0103 (SBZ3)
-		bne.s	.notsbz
-		move.w	#bgm_SBZ,d0	; play SBZ music
-
-.notsbz:
-		if Revision<>0
-			tst.b	(v_invinc).w ; is Sonic invincible?
-			beq.s	.notinvinc ; if not, branch
-			move.w	#bgm_Invincible,d0
-.notinvinc:
-			tst.b	(f_lockscreen).w ; is Sonic at a boss?
-			beq.s	.playselected ; if not, branch
-			move.w	#bgm_Boss,d0
-.playselected:
-		endif
-
-		jsr	(QueueSound1).l
-
-.over12:
-		move.w	#30,(v_air).w	; reset air to 30 seconds
-		clr.b	(v_sonicbubbles+$32).w
+ResumeMusic:	; no longer resumes music, now just replenishes air
+		move.w	#30,(v_air).w			; reset air to 30 seconds
+		clr.b	(v_sonicbubbles+objoff_32).w	; stop showing drowning countdown number bubbles
 		rts
 ; End of function ResumeMusic
 
@@ -7506,19 +7464,6 @@ Art_Sonic:	binclude "chars/Sonic/Uncompressed.bin"	; Sonic
 
 Map_Sonic:	include	 "chars/Sonic/Maps.asm"
 SonicDynPLC:	include	 "chars/Sonic/GFX.asm"
-
-; ---------------------------------------------------------------------------
-; Uncompressed graphics - Insta-Shield
-; ---------------------------------------------------------------------------
-
-;Art_InstaShield:
-;		include "chars/Sonic/Insta-shield/Uncompressed.bin"
-;Map_InstaShield:
-;		include "chars/Sonic/Insta-shield/Map.asm"
-;DPLC_InstaShield:
-;		include "chars/Sonic/Insta-shield/GFX.asm"
-;Ani_InstaShield:
-;		include "chars/Sonic/Insta-shield/Anim.asm"
 
 ; ---------------------------------------------------------------------------
 ; Uncompressed graphics - Metal Sonic

@@ -140,7 +140,8 @@ v_pcyc_num:		ds.w	1		; palette cycling - current reference number
 v_pcyc_time:		ds.w	1		; palette cycling - time until the next change
 v_random:		ds.l	1		; pseudo random number buffer
 f_pause:		ds.w	1		; flag set to pause the game
-			ds.b	4		; unused
+			ds.b	3		; unused
+v_instashield		ds.b 	1		; 00 = Nothing, 01 = InstaShield, 
 v_vdp_buffer2:		ds.w	1		; VDP instruction buffer
 			ds.b	2		; unused
 f_hbla_pal:		ds.w	1		; flag set to change palette during HBlank (0000 = no; 0001 = change)
