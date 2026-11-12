@@ -89,7 +89,7 @@ Pow_ChkInvinc:
 		bne.s	Pow_ChkRings
 
 		move.b	#1,(v_invinc).w	; make Sonic invincible
-		move.w	#$4B0,(v_player+$32).w ; time limit for the power-up
+		move.w	#$C6C,(v_player+$32).w ; time limit for the power-up
 		move.b	#id_ShieldItem,(v_starsobj1).w ; load stars object ($3801)
 		move.b	#1,(v_starsobj1+obAnim).w
 		move.b	#id_ShieldItem,(v_starsobj2).w ; load stars object ($3802)

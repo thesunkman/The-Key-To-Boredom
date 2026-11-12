@@ -25,6 +25,7 @@ FixBugs		  = 0	; change to 1 to enable bugfixes
 zeroOffsetOptimization = 0	; if 1, makes a handful of zero-offset instructions smaller
 
 	include "MacroSetup.asm"
+	include "sound/Sonic-2-Clone-Driver-v2/Definitions.asm"
 	include	"Constants.asm"
 	include	"Variables.asm"
 	include	"Macros.asm"
@@ -593,9 +594,10 @@ VBlank:
 		jsr	VBla_Index(pc,d0.w)
 
 VBla_Music:
-		jsr	(UpdateMusic).l
+		
 
 VBla_Exit:
+		SMPS_UpdateSoundDriver
 		addq.l	#1,(v_vbla_count).w
 		movem.l	(sp)+,d0-a6
 		rte	
@@ -712,8 +714,7 @@ VBla_08:
 		cmpi.b	#96,(v_hbla_line).w
 		bhs.s	Demo_Time
 		move.b	#1,(f_doupdatesinhblank).w
-		addq.l	#4,sp
-		bra.w	VBla_Exit
+		rts
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to run a demo for an amount of time
@@ -900,7 +901,6 @@ loc_119E:
 		clr.b	(f_doupdatesinhblank).w
 		movem.l	d0-a6,-(sp)
 		bsr.w	Demo_Time
-		jsr	(UpdateMusic).l
 		movem.l	(sp)+,d0-a6
 		rte	
 ; End of function HBlank
@@ -1044,31 +1044,7 @@ ClearScreen:
 		rts
 ; End of function ClearScreen
 
-; ---------------------------------------------------------------------------
-; Subroutine to load the DAC driver
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
-
-; SoundDriverLoad:
-DACDriverLoad:
-		nop	
-		stopZ80
-		deassertZ80Reset
-		lea	(DACDriver).l,a0	; load DAC driver
-		lea	(z80_ram).l,a1		; target Z80 RAM
-		bsr.w	KosDec			; decompress
-		assertZ80Reset
-		nop	
-		nop	
-		nop	
-		nop	
-		deassertZ80Reset
-		startZ80
-		rts
-; End of function DACDriverLoad
-
-		include	"_inc/Queue Sound Routines.asm"
+		include "sound/Sonic-2-Clone-Driver-v2/engine/Functions.asm"
 		include	"_inc/PauseGame.asm"
 
 ; ---------------------------------------------------------------------------
@@ -2336,21 +2312,14 @@ LevelSelect:
 		cmpi.w	#$14,d0		; have you selected item $14 (sound test)?
 		bne.s	LevSel_Level_SS	; if not, go to Level/SS subroutine
 		move.w	(v_levselsound).w,d0
-		addi.w	#$80,d0
 		tst.b	(f_creditscheat).w ; is Japanese Credits cheat on?
 		beq.s	LevSel_NoCheat	; if not, branch
-		cmpi.w	#$9F,d0		; is sound $9F being played?
+		cmpi.w	#$1F,d0		; is sound $9F being played?
 		beq.s	LevSel_Ending	; if yes, branch
-		cmpi.w	#$9E,d0		; is sound $9E being played?
+		cmpi.w	#$1E,d0		; is sound $9E being played?
 		beq.s	LevSel_Credits	; if yes, branch
 
 LevSel_NoCheat:
-		; This is a workaround for a bug; see PlaySoundID for more.
-		; Once you've fixed the bugs there, comment these four instructions out.
-		cmpi.w	#bgm__Last+1,d0	; is sound $80-$93 being played?
-		blo.s	LevSel_PlaySnd	; if yes, branch
-		cmpi.w	#sfx__First,d0	; is sound $94-$9F being played?
-		blo.s	LevelSelect	; if yes, branch
 
 LevSel_PlaySnd:
 		bsr.w	QueueSound2
@@ -2591,8 +2560,6 @@ LevSel_SndTest:
 		btst	#bitL,d1	; is left pressed?
 		beq.s	LevSel_Right	; if not, branch
 		subq.w	#1,d0		; subtract 1 from sound test
-		bhs.s	LevSel_Right
-		moveq	#$4F,d0		; if sound test moves below 0, set to $4F
 
 
 LevSel_Right:
@@ -2656,7 +2623,6 @@ LevSel_DrawAll:
 LevSel_DrawSnd:
 		locVRAM	vram_bg+$C30		; sound test position on screen
 		move.w	(v_levselsound).w,d0
-		addi.w	#$80,d0
 		move.b	d0,d2
 		lsr.b	#4,d0
 		bsr.w	LevSel_ChgSnd	; draw 1st digit
@@ -8223,7 +8189,7 @@ ObjPos_Null:	dc.b $FF, $FF, 0, 0, 0,	0
 		endm
 		endif
 
-SoundDriver:	include "s1.sounddriver.asm"
+		include "sound/Sonic-2-Clone-Driver-v2/engine/Sonic 2 Clone Driver v2.asm"
 
 ; end of 'ROM'
 		even
